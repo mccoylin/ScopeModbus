@@ -76,4 +76,4 @@ class Ui_DialogPro(object):
         self.Lbl_DevAddr.setText(_translate("DialogPro", "DevAddr"))
         self.Lbl_Product.setText(_translate("DialogPro", "Product"))
         self.label.setText(_translate("DialogPro", "AcqCyc"))
-import pyimg_rc
+from ..layout import pyimg_rc

@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
 # @author: Toso
@@ -5,32 +6,32 @@
 # @comment: ______________
 #
 
-from PyQt4 import QtCore, QtGui, Qt
-from layout.ui_layout_main import Ui_MainWindow
-from layout.ui_layout_product import Ui_DialogPro
-from layout.ui_layout_comm import Ui_DialogComm
-from layout.ui_layout_option import Ui_DialogOption
-from layout.ui_layout_upgrade import Ui_DialogUpgrade
-from layout.ui_layout_about import Ui_DialogAbout
+from PyQt5 import QtCore, QtGui, QtWidgets
+from .layout.ui_layout_main import Ui_MainWindow
+from .layout.ui_layout_product import Ui_DialogPro
+from .layout.ui_layout_comm import Ui_DialogComm
+from .layout.ui_layout_option import Ui_DialogOption
+from .layout.ui_layout_upgrade import Ui_DialogUpgrade
+from .layout.ui_layout_about import Ui_DialogAbout
 import numpy as np
 import time
 import datetime
 import os
-from layout import pyimg_rc
-from MBRTU.modbus import MB
+from .layout import pyimg_rc
+from .MBRTU.modbus import MB
 import glob
 import json
 from configobj import ConfigObj
-import MBRTU.MBFormat as mbf
-from log import XStream
+from .MBRTU import MBFormat as mbf
+from .log import XStream
 import sys
-import mypath
+from . import mypath
 
 
 #时间线程
 class TimeThread(QtCore.QThread):
     def __init__(self, parent=None):
-        super(TimeThread, self).__init__(parent)
+        super().__init__()
 
     def run(self):
         while True:
@@ -42,13 +43,11 @@ class TimeThread(QtCore.QThread):
         self.txt_time = obj
 
 # 采集线程
-
-
 class AcqThread(QtCore.QThread):
     signal_acqdata = QtCore.pyqtSignal(str, list)  # 信号
 
     def __init__(self, parent=None):
-        super(AcqThread, self).__init__(parent)
+        super().__init__()
         self.bol_working = True
         self.bol_emit = False
         self.int_cyc = 1  # 单位为s
@@ -56,7 +55,7 @@ class AcqThread(QtCore.QThread):
 
     def run(self):
         while self.bol_working:
-            # print "Working", self.thread()
+            # print("Working", self.thread())
             if self.bol_emit:
               try:
                 self.cmdtxt.setUpdatesEnabled(False)
@@ -66,7 +65,7 @@ class AcqThread(QtCore.QThread):
                     startaddr = item['startaddr']
                     length = item['length']
                     d = self.mb.read(func, startaddr, length)
-                    #print func,startaddr,length,d
+                    #print(func,startaddr,length,d)
                     if item['type'] == 'int':
                         dv = mbf.ReadInt(d)
                     elif item['type'] == 'float':
@@ -79,7 +78,7 @@ class AcqThread(QtCore.QThread):
                         else:
                           dv = False
                     v.append(dv)  
-                #print v   
+                #print(v)
                 self.cmdtxt.setUpdatesEnabled(True)
                 self.num += 1 
                 self.signal_acqdata.emit("Running:"+str(self.num), v)  # 发送信号              
@@ -115,12 +114,12 @@ class AcqThread(QtCore.QThread):
                 startaddr = item['startaddr']
                 length = item['length']
                 d = self.mb.read(func, startaddr, length)
-                #print func,startaddr,length,d
+                #print(func,startaddr,length,d)
                 if item['type'] == 'int':
                     dv = mbf.ReadInt(d)
                 elif item['type'] == 'float':
                     dv = mbf.ReadFloat(d)
-                    # print dv
+                    # print(dv)
                 elif item['type'] == 'list':
                         dv = mbf.ReadInt(d)
                 elif item['type'] == 'bool':
@@ -157,12 +156,12 @@ class AcqThread(QtCore.QThread):
 # 升级加载对话框
 
 
-class dialogUpgrade(QtGui.QDialog):
+class dialogUpgrade(QtWidgets.QDialog):
     def __init__(self):
-        super(dialogUpgrade, self).__init__()
+        super().__init__()
         self.ui = Ui_DialogUpgrade()
         self.ui.setupUi(self)
-        self.setWindowFlags(Qt.Qt.WindowCloseButtonHint)
+        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
         self.ui.toolButton.clicked.connect(self.LoadDialogPath)
         self.ui.Btn_Upgrade.clicked.connect(self.Upgrade)
         self.ui.progressBar.setValue(0)
@@ -170,7 +169,7 @@ class dialogUpgrade(QtGui.QDialog):
         self.ui.plainTextEdit.setPlainText('')
 
     def LoadDialogPath(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self,self.tr(u'select UpgradeFile'),'',u'file(*.upf)')
+        filename = QtWidgets.QFileDialog.getOpenFileName(self,self.tr(u'select UpgradeFile'),'',u'file(*.upf)')
         self.ui.lineEdit.setText(filename)
 
     def Upgrade(self):
@@ -179,68 +178,72 @@ class dialogUpgrade(QtGui.QDialog):
 # 选项加载对话框
 
 
-class dialogOption(QtGui.QDialog):
+class dialogOption(QtWidgets.QDialog):
     def __init__(self):
-        super(dialogOption, self).__init__()
+        super().__init__()
         self.ui = Ui_DialogOption()
         self.ui.setupUi(self)
-        self.setWindowFlags(Qt.Qt.WindowCloseButtonHint)
+        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
 
 
 # 通信配置加载对话框
 
 
-class dialogComm(QtGui.QDialog):
+class dialogComm(QtWidgets.QDialog):
     def __init__(self, ports):
-        super(dialogComm, self).__init__()
+        super().__init__()
         self.ui = Ui_DialogComm()
         self.ui.setupUi(self)
-        self.ui.comb_Comm.addItems(ports)
+        # ubuntu 底下沒有找到 serial port 時，port = srt,  只能使用 addItem()
+        if( type(ports) is str):
+            self.ui.comb_Comm.addItem(ports)
+        else:
+            self.ui.comb_Comm.addItems(ports)
         self.ui.comb_BaudR.addItems(['9600', '19200', '115200'])
         self.ui.comb_DPaity.addItems(['None', 'Odd', 'Even'])
         self.ui.comb_DataBit.addItems(['5', '6', '7', '8'])
         self.ui.comb_StopBit.addItems(['1', '1.5', '2'])
         self.ui.Edt_Timeout.setValidator(QtGui.QIntValidator(10, 10000))
         self.ui.Edt_Timeout.setText('1000')
-        self.setWindowFlags(Qt.Qt.WindowCloseButtonHint)
+        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
 
 # 关于对话框
 
 
-class dialogAbout(QtGui.QDialog):
+class dialogAbout(QtWidgets.QDialog):
     def __init__(self):
-        super(dialogAbout, self).__init__()
+        super().__init__()
         self.ui = Ui_DialogAbout()
         self.ui.setupUi(self)
-        self.setWindowFlags(Qt.Qt.WindowCloseButtonHint)
+        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
         self.ui.plainTextEdit.setPlainText(self.tr('Version:1.0'))
         self.ui.plainTextEdit.appendPlainText(self.tr('Author:Toso'))
 
 # 产品加载对话框
 
 
-class dialogProduct(QtGui.QDialog):
+class dialogProduct(QtWidgets.QDialog):
     def __init__(self):
-        super(dialogProduct, self).__init__()
+        super().__init__()
         self.ui = Ui_DialogPro()
         self.ui.setupUi(self)
         # 加载翻译配置
         configPath = mypath.FilePath('Config', 'Sys.ini')
         config = ConfigObj(configPath, encoding='UTF8')
-        # print config['CommPar']['Comm']
+        # print(config['CommPar']['Comm'])
         try:
             Lang = config['System']['Lang']
         except:
             Lang = "ENGLISH"
         p = mypath.FilePath('Product',Lang)
         pro = glob.glob(p + '//*')
-        #print os.path, p
+        #print(os.path, p)
         self.ProductPath = pro
         for item in pro:
             filename, extension = os.path.splitext(os.path.basename(item))
             if extension == '.json':
                 self.ui.comb_Product.addItem(filename)
-        self.setWindowFlags(Qt.Qt.WindowCloseButtonHint)
+        self.setWindowFlags(QtCore.Qt.WindowCloseButtonHint)
         self.ui.Edt_DevAddr.setValidator(QtGui.QIntValidator(0, 250))
         self.ui.Edt_DevAddr.setText('1')
         self.ui.Edt_AcqCyc.setValidator(QtGui.QIntValidator(1,1000))
@@ -252,20 +255,22 @@ class dialogProduct(QtGui.QDialog):
 # 主窗体
 
 
-class MyWindow(QtGui.QMainWindow):
+class MyWindow(QtWidgets.QMainWindow):
     def __init__(self):
-        super(MyWindow, self).__init__()
+        super().__init__()
         # 这里需要注意self.ui已经将Ui_MainWindow类实例
         # 化，因此继承了该类的所有属性，后面更改设置属性都用self.ui“冠名”
         # 主UI
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        # 需要先建出 self.Txt_Msg, 才正常
+        self.UiInit()
+
         #log信号连接create connections
         xstream = XStream()
         xstream.stdout().messageWritten.connect( self.LogHistory)
         xstream.stderr().messageWritten.connect( self.LogHistory)
-
-        self.UiInit()
 
 
         # modbus通信class
@@ -354,7 +359,7 @@ class MyWindow(QtGui.QMainWindow):
         # pass
         # ----------添加工具栏----------------------
         # 设备连接按钮
-        self.Btn_DevConn = QtGui.QAction(QtGui.QIcon(
+        self.Btn_DevConn = QtWidgets.QAction(QtGui.QIcon(
             ":/source/img/connect.png"), self.tr(u'Conn'), self)
         self.Btn_DevConn.setStatusTip(self.tr(u'Device Connect'))
         self.Btn_DevConn.triggered.connect(self.DevConn)
@@ -362,7 +367,7 @@ class MyWindow(QtGui.QMainWindow):
         self.ui.toolBar.addSeparator()
 
         # 采集开始按钮
-        self.Btn_AcqStart = QtGui.QAction(QtGui.QIcon(
+        self.Btn_AcqStart = QtWidgets.QAction(QtGui.QIcon(
             ":/source/img/start.png"), self.tr(u'Start'), self)
         self.Btn_AcqStart.setStatusTip(self.tr(u'Acquire Start'))
         self.Btn_AcqStart.triggered.connect(self.AcqStart)
@@ -370,13 +375,13 @@ class MyWindow(QtGui.QMainWindow):
         #self.Btn_AcqStart.setChecked(False)
         self.ui.toolBar.addAction(self.Btn_AcqStart)
         # 采集停止按钮
-        self.Btn_AcqStop = QtGui.QAction(QtGui.QIcon(
+        self.Btn_AcqStop = QtWidgets.QAction(QtGui.QIcon(
             ":/source/img/stop.png"), self.tr(u'Stop'), self)
         self.Btn_AcqStop.setStatusTip(self.tr(u'Acquire Stop'))
         self.Btn_AcqStop.triggered.connect(self.AcqStop)
         self.ui.toolBar.addAction(self.Btn_AcqStop)
         # 采集保存按钮
-        self.Btn_AcqSave = QtGui.QAction(QtGui.QIcon(
+        self.Btn_AcqSave = QtWidgets.QAction(QtGui.QIcon(
             ":/source/img/save.png"), self.tr(u'Save'), self)
         self.Btn_AcqSave.setStatusTip(self.tr(u'Acquire Save'))
         self.ui.toolBar.addAction(self.Btn_AcqSave)
@@ -384,13 +389,13 @@ class MyWindow(QtGui.QMainWindow):
         self.ui.toolBar.addSeparator()
 
         # 通信设置按钮
-        self.Btn_CommSet = QtGui.QAction(QtGui.QIcon(
+        self.Btn_CommSet = QtWidgets.QAction(QtGui.QIcon(
             ":/source/img/comm.png"), self.tr(u'CommSet'), self)
         self.Btn_CommSet.setStatusTip(self.tr(u'Communication Set'))
         self.Btn_CommSet.triggered.connect(self.CommSet)
         self.ui.toolBar.addAction(self.Btn_CommSet)
         # 选项设置按钮
-        self.Btn_Option = QtGui.QAction(QtGui.QIcon(
+        self.Btn_Option = QtWidgets.QAction(QtGui.QIcon(
             ":/source/img/option.png"), self.tr(u'Option'), self)
         self.Btn_Option.setStatusTip(self.tr(u'OptionSet'))
         self.Btn_Option.triggered.connect(self.OptionSet)
@@ -399,7 +404,7 @@ class MyWindow(QtGui.QMainWindow):
         self.ui.toolBar.addSeparator()
 
         # 升级
-        self.Btn_Upgrade = QtGui.QAction(QtGui.QIcon(
+        self.Btn_Upgrade = QtWidgets.QAction(QtGui.QIcon(
             ":/source/img/upgrade.png"), self.tr(u'Upgrade'), self)
         self.Btn_Upgrade.setStatusTip(self.tr(u'Upgrade'))
         self.Btn_Upgrade.triggered.connect(self.UpgradeShow)
@@ -408,40 +413,40 @@ class MyWindow(QtGui.QMainWindow):
         self.ui.toolBar.addSeparator()
 
         # 帮助
-        self.Btn_HelpFile = QtGui.QAction(QtGui.QIcon(
+        self.Btn_HelpFile = QtWidgets.QAction(QtGui.QIcon(
             ":/source/img/help.png"), self.tr(u'HelpFile'), self)
         self.Btn_HelpFile.setStatusTip(self.tr(u'HelpFile'))
         self.ui.toolBar.addAction(self.Btn_HelpFile)
 
     def StatusBarInit(self):
-        #self.Txt_Sep = QtGui.QLabel()
+        #self.Txt_Sep = QtWidgets.QLabel()
         #self.ui.statusBar.addPermanentWidget(self.Txt_Sep)
         self.ui.statusBar.setMaximumHeight(20)
 
-        self.Txt_Msg = QtGui.QLabel()
+        self.Txt_Msg = QtWidgets.QLabel()
         self.Txt_Msg.width = 200
         self.Txt_Msg.setText(self.tr('Please Connect the Device...'))        
         self.ui.statusBar.addPermanentWidget(self.Txt_Msg)
 
-        self.Txt_Com = QtGui.QLabel()
+        self.Txt_Com = QtWidgets.QLabel()
         self.Txt_Com.setMinimumSize(QtCore.QSize(90,0))
         self.Txt_Com.setAlignment(QtCore.Qt.AlignCenter)
         self.Txt_Com.setText(self.tr('NoPort'))
         self.ui.statusBar.addPermanentWidget(self.Txt_Com)
 
-        self.Txt_Pro = QtGui.QLabel()
+        self.Txt_Pro = QtWidgets.QLabel()
         self.Txt_Pro.setMinimumSize(QtCore.QSize(120,0))
         self.Txt_Pro.setAlignment(QtCore.Qt.AlignCenter)
         self.Txt_Pro.setText(self.tr('ProductInfo'))
         self.ui.statusBar.addPermanentWidget(self.Txt_Pro)
 
-        self.Txt_Addr = QtGui.QLabel()
+        self.Txt_Addr = QtWidgets.QLabel()
         self.Txt_Addr.setMinimumSize(QtCore.QSize(70,0))
         self.Txt_Addr.setAlignment(QtCore.Qt.AlignCenter)
         self.Txt_Addr.setText(self.tr('None'))
         self.ui.statusBar.addPermanentWidget(self.Txt_Addr)
 
-        self.Txt_time = QtGui.QLabel()
+        self.Txt_time = QtWidgets.QLabel()
         self.Txt_time.setMinimumSize(QtCore.QSize(130,0))
         self.Txt_time.setAlignment(QtCore.Qt.AlignCenter)
         self.Txt_time.setText('0000-00-00 00:00:00')
@@ -452,29 +457,29 @@ class MyWindow(QtGui.QMainWindow):
         pass
 
     def closeEvent(self, event):
-        result = QtGui.QMessageBox.question(self,
+        result = QtWidgets.QMessageBox.question(self,
                                             self.tr(u"Exit"),
                                             self.tr(u"Are you Sure?"),
-                                            QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+                                            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
 
         event.ignore()
-        if result == QtGui.QMessageBox.Yes:
+        if result == QtWidgets.QMessageBox.Yes:
             # self.releasePlot()  # release thread's resouce
             self.threadexit()
             event.accept()
 
     def helpfile(self):
-        #print '12345'
-        tempdir = QtGui.QApplication.applicationDirPath()
-        # print tempdir
+        #print('12345')
+        tempdir = QtWidgets.QApplication.applicationDirPath()
+        # print(tempdir)
         filepath = QtCore.QString.fromUtf8(
             os.path.join(str(tempdir), 'readme.txt'))
-        #print filepath
+        #print(filepath)
         if QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(filepath)) == False:
-            QtGui.QMessageBox.information(self, self.tr(u"ScopeModbus"), self.tr(u"can't find helpfile！"))
+            QtWidgets.QMessageBox.information(self, self.tr(u"ScopeModbus"), self.tr(u"can't find helpfile！"))
 
     def DevConn(self):
-        print unicode(self.tr(u"ScopeModbus"))
+        print(self.tr(u"ScopeModbus"))
         self.dialogproduct.show()
 
     def LoadProductPar(self):
@@ -482,7 +487,7 @@ class MyWindow(QtGui.QMainWindow):
         self.DevAddr = int(self.dialogproduct.ui.Edt_DevAddr.text())
         self.ProductName = self.dialogproduct.ui.comb_Product.currentText()
         self.AcqCyc = int(self.dialogproduct.ui.Edt_AcqCyc.text())
-        #print str(self.ProductName)
+        #print(str(self.ProductName))
         path = self.dialogproduct.ProductPath[self.dialogproduct.ui.comb_Product.currentIndex()]
         with open(path, 'r') as f:
             data = f.read()
@@ -491,15 +496,15 @@ class MyWindow(QtGui.QMainWindow):
         self.ui.widget_parTree.LoadPar(self.ProductPar)
         self.ui.widget_parTree.partree.sigTreeStateChanged.connect(self.treeChange)
 
-        # print self.mb.ComAutoFind()
+        # print(self.mb.ComAutoFind())
         self.mb.close()
         try:
           self.mb.Open(self.DevAddr, self.Comm,self.BaudR,self.DPaity,self.DataBit,self.StopBit,self.Timeout)
         except Exception as e:
-          QtGui.QMessageBox.information(self,self.tr(u'ErrInfo'),self.tr("can't open port!"))
+          QtWidgets.QMessageBox.information(self,self.tr(u'ErrInfo'),self.tr("can't open port!"))
         #self.ui.widget_parTree.mb_read(self.mb, 03, 0, 1)
         #读取初始状态
-        #print self.ProductPar
+        #print(self.ProductPar)
         self.threadAcq.UpdateMB(self.mb)
         self.threadAcq.UpdateAutoPar(self.ProductPar[0]['children'])
         self.threadAcq.TreeRead(self.ui.widget_parTree,self.ProductPar)
@@ -586,7 +591,7 @@ class MyWindow(QtGui.QMainWindow):
         self.threadAcq.stopAcq()
 
     def Graph_Update(self, str, list):
-        #print str
+        #print(str)
         self.ui.widget_qtGraph.Update(1, list)
         basicname = self.ProductPar[0]['name']
         for index,item in enumerate(self.ProductPar[0]['children']):
@@ -608,19 +613,20 @@ class MyWindow(QtGui.QMainWindow):
         config['CommPar']['Timeout']=self.dialogcomm.ui.Edt_Timeout.text()
         config.write()
         self.LoadCommPar()
-        print self.tr('Save Communication parameter')
+        print(self.tr('Save Communication parameter'))
 
     def LoadCommPar(self):
         configPath = mypath.FilePath('Config','Comm.ini')
         config=ConfigObj(configPath, encoding='UTF8')
-        # print config['CommPar']['Comm']
+        # print(config['CommPar']['Comm'])
         try:
           self.Comm=config['CommPar']['Comm']
           self.dialogcomm.ui.comb_Comm.setCurrentIndex(
             self.dialogcomm.ui.comb_Comm.findText(self.Comm))
         except:
+          print('LoadCommPar() Comm except')
           pass
-        # print config['CommPar']['BaudR']
+        # print(config['CommPar']['BaudR'])
         try:
           BaudR=config['CommPar']['BaudR']
           self.dialogcomm.ui.comb_BaudR.setCurrentIndex(
@@ -628,7 +634,7 @@ class MyWindow(QtGui.QMainWindow):
           self.BaudR=int(BaudR)
         except:
           pass
-        # print config['CommPar']['DPaity']
+        # print(config['CommPar']['DPaity']
         try:
           DPaity=config['CommPar']['DPaity']
           self.dialogcomm.ui.comb_DPaity.setCurrentIndex(
@@ -641,7 +647,7 @@ class MyWindow(QtGui.QMainWindow):
               self.DPaity= 'E'
         except:
           pass
-        # print config['CommPar']['DataBit']
+        # print(config['CommPar']['DataBit'])
         try:
           DataBit=config['CommPar']['DataBit']
           self.dialogcomm.ui.comb_DataBit.setCurrentIndex(
@@ -649,7 +655,7 @@ class MyWindow(QtGui.QMainWindow):
           self.DataBit=int(DataBit)
         except:
           pass
-        # print config['CommPar']['StopBit']
+        # print(config['CommPar']['StopBit'])
         try:
           StopBit=config['CommPar']['StopBit']
           self.dialogcomm.ui.comb_StopBit.setCurrentIndex(
@@ -662,7 +668,7 @@ class MyWindow(QtGui.QMainWindow):
               self.StopBit=2
         except:
           pass
-        # print config['CommPar']['Timeout']
+        # print(config['CommPar']['Timeout'])
         try:
           Timeout=config['CommPar']['Timeout']
           self.dialogcomm.ui.Edt_Timeout.setText(Timeout)
@@ -671,14 +677,14 @@ class MyWindow(QtGui.QMainWindow):
           pass
 
         self.Txt_Com.setText(self.Comm + '-'+ BaudR)
-        #print self.tr('Load Communication parameter')
+        #print(self.tr('Load Communication parameter'))
 
     def ComRefresh(self):
         for i in range(self.dialogcomm.ui.comb_Comm.count()):
             self.dialogcomm.ui.comb_Comm.removeItem(0)
         p=self.mb.ComAutoFind()
         self.dialogcomm.ui.comb_Comm.addItems(p)
-        print 'ComRefresh'
+        print('ComRefresh')
 
     def treeChange(self,param, changes):
         #print("treeChange:")
@@ -704,14 +710,14 @@ class MyWindow(QtGui.QMainWindow):
         f.close()
 
     def LogHistory(self,msg):
-        #print '11111' 此处禁止使用print
+        #print('11111' 此处禁止使用print)
         self.Txt_Msg.setText(msg)
         self.ui.txt_CMD_2.appendPlainText(msg)
 
     def LoadOptionPar(self):
         configPath = mypath.FilePath('Config','Sys.ini')
         config=ConfigObj(configPath, encoding='UTF8')
-        # print config['CommPar']['Comm']
+        # print(config['CommPar']['Comm'])
         try:
           self.Lang=config['System']['Lang']
           self.dialogoption.ui.comb_Lang.setCurrentIndex(
@@ -724,13 +730,13 @@ class MyWindow(QtGui.QMainWindow):
         self.dialogoption.show()
 
     def SaveOption(self):
-        print self.tr('Save Option')
+        print(self.tr('Save Option'))
         configPath = mypath.FilePath('Config','Sys.ini')
         config=ConfigObj(configPath, encoding='UTF8')
         config['System']={}
         config['System']['Lang']=self.dialogoption.ui.comb_Lang.currentText()
         config.write()
-        print self.tr('Saved!')
+        print(self.tr('Saved!'))
 
     def UpgradeShow(self):
         self.dialogupgrade.show()

@@ -107,4 +107,4 @@ class Ui_DialogComm(object):
         self.Lbl_4.setText(_translate("DialogComm", "DataBit"))
         self.Lbl_5.setText(_translate("DialogComm", "StopBit"))
         self.Lbl_6.setText(_translate("DialogComm", "Timeout"))
-import pyimg_rc
+from ..layout import pyimg_rc

@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
 # @author: Toso
@@ -5,20 +6,20 @@
 # @comment: ______________
 #
 
-
+from PyQt5 import QtCore, QtGui, QtWidgets
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 from pyqtgraph.Point import Point
 
 
-class QtGraphWrapper(QtGui.QWidget):
+class QtGraphWrapper(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.graph = pg.PlotWidget()
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.graph)
-        self.layout.setMargin(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
 
         self.legend = self.graph.addLegend()

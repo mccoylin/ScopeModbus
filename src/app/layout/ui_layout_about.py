@@ -41,4 +41,4 @@ class Ui_DialogAbout(object):
         DialogAbout.setWindowTitle(_translate("DialogAbout", "About"))
         self.label.setText(_translate("DialogAbout", "<html><head/><body><p><img src=\":/source/img/ico.png\" width=\"40\" height=\"40\"/><span style=\" font-size:16pt; font-weight:600;color:rgb(0, 0, 150)\">ScopeModbus</span></p></body></html>"))
         self.plainTextEdit.setPlainText(_translate("DialogAbout", "Version:"))
-import pyimg_rc
+from ..layout import pyimg_rc

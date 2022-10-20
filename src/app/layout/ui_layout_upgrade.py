@@ -68,4 +68,4 @@ class Ui_DialogUpgrade(object):
         DialogUpgrade.setWindowTitle(_translate("DialogUpgrade", "Upgrade"))
         self.toolButton.setText(_translate("DialogUpgrade", "..."))
         self.Btn_Upgrade.setText(_translate("DialogUpgrade", "Upgrade"))
-import pyimg_rc
+from ..layout import pyimg_rc

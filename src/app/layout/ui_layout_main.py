@@ -204,6 +204,6 @@ class Ui_MainWindow(object):
         self.action_Upgrade.setText(_translate("MainWindow", "Upgrade"))
         self.action_Update.setText(_translate("MainWindow", "Update"))
         self.action_About.setText(_translate("MainWindow", "About"))
-from partreewrapper import ParTreeWrapper
-from qtgraphwrapper import QtGraphWrapper
-import pyimg_rc
+from ..layout.partreewrapper import ParTreeWrapper
+from ..layout.qtgraphwrapper import QtGraphWrapper
+from ..layout import pyimg_rc

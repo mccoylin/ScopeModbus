@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
 # @author: Toso
@@ -5,9 +6,9 @@
 # @comment: ______________
 #
 import sys
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 import time
-import mypath
+from . import mypath
 
 
 class XStream(QtCore.QObject):
@@ -17,7 +18,7 @@ class XStream(QtCore.QObject):
     messageWritten = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
-        super(XStream, self).__init__(parent)
+        super().__init__()
         self.filepath = ''
 
     def flush(self):
@@ -30,10 +31,10 @@ class XStream(QtCore.QObject):
         if (not self.signalsBlocked()):
             if (msg != '\n'):
                 t = time.strftime("%Y-%m-%d %H:%M:%S  ", time.localtime())
-                self.messageWritten.emit(unicode(t + msg))
+                self.messageWritten.emit(t + msg)
                 fp = mypath.FilePath('Log', 'log.log')
                 f = open(fp, 'a+')
-                f.write(t + msg.encode('utf-8') + '\n')
+                f.write(t + msg + '\n')
                 f.close()
 
     @staticmethod

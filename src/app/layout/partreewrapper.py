@@ -14,7 +14,7 @@
 
 
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
+from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 
 import pyqtgraph.parametertree.parameterTypes as pTypes
 from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
@@ -120,9 +120,9 @@ parinit = [
 ]
 
 
-class ParTreeWrapper(QtGui.QWidget):
+class ParTreeWrapper(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         # Create tree of Parameter objects
         self.partree = Parameter.create(
             name='params', type='group', children=parinit)
@@ -137,9 +137,9 @@ class ParTreeWrapper(QtGui.QWidget):
         self.t = ParameterTree()
         self.t.setParameters(self.partree, showTop=False)
         # layout
-        self.layout = QtGui.QGridLayout()
+        self.layout = QtWidgets.QGridLayout()
         self.layout.addWidget(self.t)
-        self.layout.setMargin(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
 
     def LoadPar(self, pars):

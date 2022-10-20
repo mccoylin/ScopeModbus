@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
 # @author: Toso
@@ -7,7 +8,7 @@
 
 
 import sys
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 from app.windows_main import MyWindow
 import os
 from configobj import ConfigObj
@@ -15,7 +16,7 @@ from app import mypath
 
 
 if __name__ == "__main__":
-    QtApp = QtGui.QApplication(sys.argv)
+    QtApp = QtWidgets.QApplication(sys.argv)
 
     # 加载翻译配置
     configPath = mypath.FilePath('Config', 'Sys.ini')
@@ -29,9 +30,9 @@ if __name__ == "__main__":
     # 加载翻译
     try:
         transPath = mypath.FilePath('Lang', Lang + '.qm')
-        print transPath
+        print (transPath)
         trans = QtCore.QTranslator()
-        print trans.load(transPath)
+        print (trans.load(transPath))
         QtApp.installTranslator(trans)
     except:
         pass

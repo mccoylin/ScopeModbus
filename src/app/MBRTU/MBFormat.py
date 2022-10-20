@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
 import struct
 import time
 
@@ -55,7 +58,7 @@ def WriteInt(value):
 #print(ReadDint((1734, 6970)))
 # print(WriteDint(456787654))
 def str_to_hex(s):
-    return ' '.join([hex(ord(c)).replace('0x', '').zfill(2).upper() for c in s])
+    return ' '.join([hex(c).replace('0x', '').zfill(2).upper() for c in s])
 
 
 def hex_to_str(s):
@@ -63,7 +66,7 @@ def hex_to_str(s):
 
 
 def str_to_bin(s):
-    return ' '.join([bin(ord(c)).replace('0b', '') for c in s])
+    return ' '.join([bin(c).replace('0b', '') for c in s])
 
 
 def bin_to_str(s):

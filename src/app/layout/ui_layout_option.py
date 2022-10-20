@@ -62,4 +62,4 @@ class Ui_DialogOption(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("DialogOption", "Tab 1"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("DialogOption", "Tab 2"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("DialogOption", "Tab 3"))
-import pyimg_rc
+from ..layout import pyimg_rc

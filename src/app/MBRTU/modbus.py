@@ -7,11 +7,11 @@
 
 import serial
 import serial.tools.list_ports
-import MBdefines as defines
+from ..MBRTU import MBdefines as defines
 import struct
 import sys
-import MBFormat
-from PyQt4 import QtCore
+from ..MBRTU import MBFormat
+from PyQt5 import QtCore
 
 PY2 = sys.version_info[0] == 2
 
